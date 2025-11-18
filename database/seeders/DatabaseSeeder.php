@@ -119,7 +119,7 @@ class DatabaseSeeder extends Seeder
         );
         $master->children()->updateOrCreate(
             [
-                'title' => 'Master Satuan',
+                'title' => 'Master Barang',
             ],
             [
                 'icon' => 'tag',
