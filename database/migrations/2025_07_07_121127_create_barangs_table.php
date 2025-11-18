@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama');
             $table->string('kode');
-            $table->string('barcode');
+            $table->string('barcode')->nullable();
             $table->string('satuan_k')->nullable();
             $table->string('satuan_b')->nullable();
             $table->string('merk')->nullable();

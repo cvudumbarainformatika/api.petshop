@@ -41,6 +41,7 @@ class BarangController extends Controller
         $kode = $request->kode;
         $validated = $request->validate([
             'nama' => 'required',
+            'barcode' => 'nullable',
             'satuan_k' => 'nullable',
             'satuan_b' => 'nullable',
             'isi' => 'nullable',
