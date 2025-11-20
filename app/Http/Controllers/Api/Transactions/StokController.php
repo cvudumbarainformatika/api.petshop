@@ -130,121 +130,85 @@ class StokController extends Controller
             $q->where('nama', 'like', '%' . request('q') . '%')
                 ->orWhere('kode', 'like', '%' . request('q') . '%');
         });
-        if ($req['depo'] == 'APS0000') {
-            $raw->with([
-                'stokAwal' => function ($q) use ($lastMonth, $req) {
-                    $q->whereDate('tgl_opname', $lastMonth)
-                        ->where('kode_depo', $req['depo'])
-                    ;
-                },
-                'stoks' => function ($q) use ($req) {
-                    $q->where('kode_depo', $req['depo']);
-                },
-                'penyesuaian' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->whereBetween('tgl_penyesuaian', [$awalBulan, $akhirBulan])
-                        ->where('kode_depo', $req['depo']);
-                },
-                'penerimaanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'penerimaan_rs.kode_barang',
-                        DB::raw('sum(penerimaan_rs.jumlah_k) as jumlah_k'),
-                    )
-                        ->leftJoin('penerimaan_hs', 'penerimaan_hs.nopenerimaan', '=', 'penerimaan_rs.nopenerimaan')
-                        ->whereBetween('penerimaan_hs.tgl_penerimaan', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('penerimaan_hs.flag')
-                        ->groupBy('penerimaan_rs.kode_barang');
-                },
-                'ReturPembelianRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'retur_pembelian_rs.kode_barang',
-                        DB::raw('sum(retur_pembelian_rs.jumlahretur_k) as jumlah_k'),
-                    )
-                        ->leftJoin('retur_pembelian_hs', 'retur_pembelian_hs.noretur', '=', 'retur_pembelian_rs.noretur')
-                        ->whereBetween('retur_pembelian_hs.tglretur', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('retur_pembelian_hs.flag')
-                        ->groupBy('retur_pembelian_rs.kode_barang');
-                },
-                'mutasiMasuk' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_barang',
-                        DB::raw('sum(mutasi_requests.distribusi) as distribusi'),
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_terima',  [$awalBulan, $akhirBulan])
-                        ->where('dari', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status')
-                        ->groupBy('mutasi_requests.kode_barang');
-                },
-                'mutasiKeluar' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_barang',
-                        DB::raw('sum(mutasi_requests.distribusi) as distribusi'),
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_distribusi',  [$awalBulan, $akhirBulan])
-                        ->where('tujuan', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status')
-                        ->groupBy('mutasi_requests.kode_barang');
-                },
-            ]);
-        } else {
-            $raw->with([
-                'stokAwal' => function ($q) use ($lastMonth, $req) {
-                    $q->whereDate('tgl_opname', $lastMonth)
-                        ->where('kode_depo', $req['depo'])
-                    ;
-                },
-                'stoks' => function ($q) use ($req) {
-                    $q->where('kode_depo', $req['depo']);
-                },
-                'penyesuaian' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->whereBetween('tgl_penyesuaian', [$awalBulan, $akhirBulan])
-                        ->where('kode_depo', $req['depo']);
-                },
-                'penjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'penjualan_r_s.kode_barang',
-                        DB::raw('sum(penjualan_r_s.jumlah_k) as jumlah_k'),
-                    )
-                        ->leftJoin('penjualan_h_s', 'penjualan_h_s.nopenjualan', '=', 'penjualan_r_s.nopenjualan')
-                        ->whereBetween('penjualan_h_s.tgl_penjualan', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('penjualan_h_s.flag')
-                        ->groupBy('penjualan_r_s.kode_barang');
-                },
-                'returPenjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'retur_penjualan_rs.kode_barang',
-                        DB::raw('sum(retur_penjualan_rs.jumlah_k) as jumlah_k'),
-                    )
-                        ->leftJoin('retur_penjualan_hs', 'retur_penjualan_hs.noretur', '=', 'retur_penjualan_rs.noretur')
-                        ->whereBetween('retur_penjualan_hs.tgl_retur', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('retur_penjualan_hs.flag')
-                        ->groupBy('retur_penjualan_rs.kode_barang');
-                },
-                'mutasiMasuk' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_barang',
-                        DB::raw('sum(mutasi_requests.distribusi) as distribusi'),
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_terima',  [$awalBulan, $akhirBulan])
-                        ->where('dari', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status')
-                        ->groupBy('mutasi_requests.kode_barang');
-                },
-                'mutasiKeluar' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_barang',
-                        DB::raw('sum(mutasi_requests.distribusi) as distribusi'),
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_distribusi',  [$awalBulan, $akhirBulan])
-                        ->where('tujuan', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status')
-                        ->groupBy('mutasi_requests.kode_barang');
-                },
-            ]);
-        }
+
+        $raw->with([
+            'stokAwal' => function ($q) use ($lastMonth, $req) {
+                $q->whereDate('tgl_opname', $lastMonth)
+                    ->where('kode_depo', $req['depo'])
+                ;
+            },
+            'stoks' => function ($q) use ($req) {
+                $q->where('kode_depo', $req['depo']);
+            },
+            'penyesuaian' => function ($q) use ($awalBulan, $akhirBulan, $req) {
+                $q->whereBetween('tgl_penyesuaian', [$awalBulan, $akhirBulan])
+                    ->where('kode_depo', $req['depo']);
+            },
+            'penerimaanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'penerimaan_rs.kode_barang',
+                    DB::raw('sum(penerimaan_rs.jumlah_k) as jumlah_k'),
+                )
+                    ->leftJoin('penerimaan_hs', 'penerimaan_hs.nopenerimaan', '=', 'penerimaan_rs.nopenerimaan')
+                    ->whereBetween('penerimaan_hs.tgl_penerimaan', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('penerimaan_hs.flag')
+                    ->groupBy('penerimaan_rs.kode_barang');
+            },
+            'ReturPembelianRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'retur_pembelian_rs.kode_barang',
+                    DB::raw('sum(retur_pembelian_rs.jumlahretur_k) as jumlah_k'),
+                )
+                    ->leftJoin('retur_pembelian_hs', 'retur_pembelian_hs.noretur', '=', 'retur_pembelian_rs.noretur')
+                    ->whereBetween('retur_pembelian_hs.tglretur', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('retur_pembelian_hs.flag')
+                    ->groupBy('retur_pembelian_rs.kode_barang');
+            },
+            'mutasiMasuk' => function ($q) use ($awalBulan, $akhirBulan, $req) {
+                $q->select(
+                    'mutasi_requests.kode_barang',
+                    DB::raw('sum(mutasi_requests.distribusi) as distribusi'),
+                )
+                    ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
+                    ->whereBetween('mutasi_headers.tgl_terima',  [$awalBulan, $akhirBulan])
+                    ->where('dari', $req['depo'])
+                    ->whereNotNull('mutasi_headers.status')
+                    ->groupBy('mutasi_requests.kode_barang');
+            },
+            'mutasiKeluar' => function ($q) use ($awalBulan, $akhirBulan, $req) {
+                $q->select(
+                    'mutasi_requests.kode_barang',
+                    DB::raw('sum(mutasi_requests.distribusi) as distribusi'),
+                )
+                    ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
+                    ->whereBetween('mutasi_headers.tgl_distribusi',  [$awalBulan, $akhirBulan])
+                    ->where('tujuan', $req['depo'])
+                    ->whereNotNull('mutasi_headers.status')
+                    ->groupBy('mutasi_requests.kode_barang');
+            },
+
+            'penjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'penjualan_r_s.kode_barang',
+                    DB::raw('sum(penjualan_r_s.jumlah_k) as jumlah_k'),
+                )
+                    ->leftJoin('penjualan_h_s', 'penjualan_h_s.nopenjualan', '=', 'penjualan_r_s.nopenjualan')
+                    ->whereBetween('penjualan_h_s.tgl_penjualan', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('penjualan_h_s.flag')
+                    ->groupBy('penjualan_r_s.kode_barang');
+            },
+            'returPenjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'retur_penjualan_rs.kode_barang',
+                    DB::raw('sum(retur_penjualan_rs.jumlah_k) as jumlah_k'),
+                )
+                    ->leftJoin('retur_penjualan_hs', 'retur_penjualan_hs.noretur', '=', 'retur_penjualan_rs.noretur')
+                    ->whereBetween('retur_penjualan_hs.tgl_retur', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('retur_penjualan_hs.flag')
+                    ->groupBy('retur_penjualan_rs.kode_barang');
+            },
+        ]);
+
         $raw->whereNull('hidden')
             ->orderBy($req['order_by'], $req['sort']);
         $totalCount = (clone $raw)->count();
@@ -270,129 +234,91 @@ class StokController extends Controller
         // $lastMonth = $akhirBulanLalu->toDateTimeString();
         $lastMonth = $akhirBulanLalu->toDateString();
         $raw = Barang::query()->where('id', request('id'));
-        if ($req['depo'] == 'APS0000') {
-            $raw->with([
-                'stokAwal' => function ($q) use ($lastMonth, $req) {
-                    $q->where('kode_depo', $req['depo'])
-                        ->whereDate('tgl_opname', $lastMonth);
-                },
-                'stok' => function ($q) use ($req) {
-                    $q->where('kode_depo', $req['depo']);
-                },
-                'penyesuaian' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->whereBetween('tgl_penyesuaian', [$awalBulan, $akhirBulan])
-                        ->where('kode_depo', $req['depo']);
-                },
-                'penerimaanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'penerimaan_rs.kode_barang',
-                        'penerimaan_rs.jumlah_k',
-                        'penerimaan_hs.nopenerimaan',
-                        'penerimaan_hs.tgl_penerimaan',
-                    )
-                        ->leftJoin('penerimaan_hs', 'penerimaan_hs.nopenerimaan', '=', 'penerimaan_rs.nopenerimaan')
-                        ->whereBetween('penerimaan_hs.tgl_penerimaan', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('penerimaan_hs.flag');
-                },
-                'ReturPembelianRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'retur_pembelian_rs.kode_barang',
-                        'retur_pembelian_rs.jumlahretur_k as jumlah_k',
-                        'retur_pembelian_hs.noretur',
-                        'retur_pembelian_hs.tglretur',
-                    )
-                        ->leftJoin('retur_pembelian_hs', 'retur_pembelian_hs.noretur', '=', 'retur_pembelian_rs.noretur')
-                        ->whereBetween('retur_pembelian_hs.tglretur', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('retur_pembelian_hs.flag');
-                },
-                'mutasiMasuk' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_barang',
-                        'mutasi_requests.distribusi',
-                        // 'mutasi_headers.dari',
-                        // 'mutasi_headers.tujuan',
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_terima',  [$awalBulan, $akhirBulan])
-                        ->where('dari', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status');
-                },
-                'mutasiKeluar' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_barang',
-                        'mutasi_requests.distribusi',
-                        // 'mutasi_headers.dari',
-                        // 'mutasi_headers.tujuan',
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_distribusi',  [$awalBulan, $akhirBulan])
-                        ->where('tujuan', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status');
-                },
-            ]);
-        } else {
-            $raw->with([
-                'stokAwal' => function ($q) use ($lastMonth, $req) {
-                    $q->where('kode_depo', $req['depo'])
-                        ->whereDate('tgl_opname', $lastMonth);
-                },
-                'stok' => function ($q) use ($req) {
-                    $q->where('kode_depo', $req['depo']);
-                },
-                'penyesuaian' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->whereBetween('tgl_penyesuaian', [$awalBulan, $akhirBulan])
-                        ->where('kode_depo', $req['depo']);
-                },
-                'penjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'penjualan_r_s.kode_barang',
-                        'penjualan_r_s.jumlah_k',
-                        'penjualan_h_s.tgl_penjualan',
-                        'penjualan_h_s.nopenjualan',
-                    )
-                        ->leftJoin('penjualan_h_s', 'penjualan_h_s.nopenjualan', '=', 'penjualan_r_s.nopenjualan')
-                        ->whereBetween('penjualan_h_s.tgl_penjualan', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('penjualan_h_s.flag');
-                },
-                'returPenjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
-                    $q->select(
-                        'retur_penjualan_rs.kode_barang',
-                        'retur_penjualan_rs.jumlah_k',
-                        'retur_penjualan_hs.tgl_retur',
-                        'retur_penjualan_hs.noretur',
-                    )
-                        ->leftJoin('retur_penjualan_hs', 'retur_penjualan_hs.noretur', '=', 'retur_penjualan_rs.noretur')
-                        ->whereBetween('retur_penjualan_hs.tgl_retur', [$awalBulan, $akhirBulan])
-                        ->whereNotNull('retur_penjualan_hs.flag');
-                },
-                'mutasiMasuk' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_mutasi',
-                        'mutasi_requests.kode_barang',
-                        'mutasi_requests.distribusi',
-                        'mutasi_headers.tgl_terima as tanggal',
-                        // 'mutasi_headers.tujuan',
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_terima',  [$awalBulan, $akhirBulan])
-                        ->where('dari', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status');
-                },
-                'mutasiKeluar' => function ($q) use ($awalBulan, $akhirBulan, $req) {
-                    $q->select(
-                        'mutasi_requests.kode_mutasi',
-                        'mutasi_requests.kode_barang',
-                        'mutasi_requests.distribusi',
-                        'mutasi_headers.tgl_distribusi as tanggal',
-                        // 'mutasi_headers.tujuan',
-                    )
-                        ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
-                        ->whereBetween('mutasi_headers.tgl_distribusi',  [$awalBulan, $akhirBulan])
-                        ->where('tujuan', $req['depo'])
-                        ->whereNotNull('mutasi_headers.status');
-                },
-            ]);
-        }
+
+        $raw->with([
+            'stokAwal' => function ($q) use ($lastMonth, $req) {
+                $q->where('kode_depo', $req['depo'])
+                    ->whereDate('tgl_opname', $lastMonth);
+            },
+            'stok' => function ($q) use ($req) {
+                $q->where('kode_depo', $req['depo']);
+            },
+            'penyesuaian' => function ($q) use ($awalBulan, $akhirBulan, $req) {
+                $q->whereBetween('tgl_penyesuaian', [$awalBulan, $akhirBulan])
+                    ->where('kode_depo', $req['depo']);
+            },
+            'penerimaanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'penerimaan_rs.kode_barang',
+                    'penerimaan_rs.jumlah_k',
+                    'penerimaan_hs.nopenerimaan',
+                    'penerimaan_hs.tgl_penerimaan',
+                )
+                    ->leftJoin('penerimaan_hs', 'penerimaan_hs.nopenerimaan', '=', 'penerimaan_rs.nopenerimaan')
+                    ->whereBetween('penerimaan_hs.tgl_penerimaan', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('penerimaan_hs.flag');
+            },
+            'ReturPembelianRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'retur_pembelian_rs.kode_barang',
+                    'retur_pembelian_rs.jumlahretur_k as jumlah_k',
+                    'retur_pembelian_hs.noretur',
+                    'retur_pembelian_hs.tglretur',
+                )
+                    ->leftJoin('retur_pembelian_hs', 'retur_pembelian_hs.noretur', '=', 'retur_pembelian_rs.noretur')
+                    ->whereBetween('retur_pembelian_hs.tglretur', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('retur_pembelian_hs.flag');
+            },
+            'penjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'penjualan_r_s.kode_barang',
+                    'penjualan_r_s.jumlah_k',
+                    'penjualan_h_s.tgl_penjualan',
+                    'penjualan_h_s.nopenjualan',
+                )
+                    ->leftJoin('penjualan_h_s', 'penjualan_h_s.nopenjualan', '=', 'penjualan_r_s.nopenjualan')
+                    ->whereBetween('penjualan_h_s.tgl_penjualan', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('penjualan_h_s.flag');
+            },
+            'returPenjualanRinci' => function ($q) use ($awalBulan, $akhirBulan) {
+                $q->select(
+                    'retur_penjualan_rs.kode_barang',
+                    'retur_penjualan_rs.jumlah_k',
+                    'retur_penjualan_hs.tgl_retur',
+                    'retur_penjualan_hs.noretur',
+                )
+                    ->leftJoin('retur_penjualan_hs', 'retur_penjualan_hs.noretur', '=', 'retur_penjualan_rs.noretur')
+                    ->whereBetween('retur_penjualan_hs.tgl_retur', [$awalBulan, $akhirBulan])
+                    ->whereNotNull('retur_penjualan_hs.flag');
+            },
+            'mutasiMasuk' => function ($q) use ($awalBulan, $akhirBulan, $req) {
+                $q->select(
+                    'mutasi_requests.kode_mutasi',
+                    'mutasi_requests.kode_barang',
+                    'mutasi_requests.distribusi',
+                    'mutasi_headers.tgl_terima as tanggal',
+                    // 'mutasi_headers.tujuan',
+                )
+                    ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
+                    ->whereBetween('mutasi_headers.tgl_terima',  [$awalBulan, $akhirBulan])
+                    ->where('dari', $req['depo'])
+                    ->whereNotNull('mutasi_headers.status');
+            },
+            'mutasiKeluar' => function ($q) use ($awalBulan, $akhirBulan, $req) {
+                $q->select(
+                    'mutasi_requests.kode_mutasi',
+                    'mutasi_requests.kode_barang',
+                    'mutasi_requests.distribusi',
+                    'mutasi_headers.tgl_distribusi as tanggal',
+                    // 'mutasi_headers.tujuan',
+                )
+                    ->leftJoin('mutasi_headers', 'mutasi_headers.kode_mutasi', '=', 'mutasi_requests.kode_mutasi')
+                    ->whereBetween('mutasi_headers.tgl_distribusi',  [$awalBulan, $akhirBulan])
+                    ->where('tujuan', $req['depo'])
+                    ->whereNotNull('mutasi_headers.status');
+            },
+        ]);
+
         $data = $raw->first();
         return new JsonResponse([
             'data' => $data,
