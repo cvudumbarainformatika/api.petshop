@@ -22,7 +22,7 @@ class StokController extends Controller
             'sort' => request('sort', 'asc'),
             'page' => request('page', 1),
             'per_page' => request('per_page', 10),
-            'depo' => !!request('depo') && request('depo') != 'gudang' ? request('depo') : 'APS0000'
+            'depo' => !!request('depo') && request('depo') != 'gudang' ? request('depo') : 'MMW0000'
         ];
 
         $query = Stok::query()
@@ -109,7 +109,7 @@ class StokController extends Controller
             'per_page' => request('per_page', 10),
             'bulan' => request('bulan') ?? Carbon::now()->month,
             'tahun' => request('tahun') ?? Carbon::now()->year,
-            'depo' => !!request('depo') && request('depo') != 'gudang' ? request('depo') : 'APS0000'
+            'depo' => !!request('depo') && request('depo') != 'gudang' ? request('depo') : 'MMW0000'
         ];
         $target = Carbon::create($req['tahun'], $req['bulan'], 1);
         $now = $target->copy()->startOfMonth();
@@ -221,7 +221,7 @@ class StokController extends Controller
         $req = [
             'bulan' => request('bulan') ?? Carbon::now()->month,
             'tahun' => request('tahun') ?? Carbon::now()->year,
-            'depo' => !!request('depo') && request('depo') != 'gudang' ? request('depo') : 'APS0000'
+            'depo' => !!request('depo') && request('depo') != 'gudang' ? request('depo') : 'MMW0000'
         ];
         $target = Carbon::create($req['tahun'], $req['bulan'], 1);
         $now = $target->copy()->startOfMonth();
