@@ -93,18 +93,18 @@ class DatabaseSeeder extends Seeder
                 'component' => 'IndexPage',
             ]
         );
-        $master->children()->updateOrCreate(
-            [
-                'title' => 'Master Rak',
-            ],
-            [
-                'icon' => 'tag',
-                'url' => 'admin/master/rak',
-                'name' => 'master.rak',
-                'view' => '/views/master/rak',
-                'component' => 'IndexPage',
-            ]
-        );
+        // $master->children()->updateOrCreate(
+        //     [
+        //         'title' => 'Master Rak',
+        //     ],
+        //     [
+        //         'icon' => 'tag',
+        //         'url' => 'admin/master/rak',
+        //         'name' => 'master.rak',
+        //         'view' => '/views/master/rak',
+        //         'component' => 'IndexPage',
+        //     ]
+        // );
         $master->children()->updateOrCreate(
             [
                 'title' => 'Master Kategori',
@@ -367,6 +367,18 @@ class DatabaseSeeder extends Seeder
                 'url' => 'admin/laporan/hutang',
                 'name' => 'laporan.hutang',
                 'view' => '/views/laporan/hutang',
+                'component' => 'IndexPage',
+            ]
+        );
+        $laporan->children()->updateOrCreate(
+            [
+                'title' => 'Laporan Fast Moving',
+            ],
+            [
+                'icon' => 'layers',
+                'url' => 'admin/laporan/fastmoving',
+                'name' => 'laporan.fastmoving',
+                'view' => '/views/laporan/fastmoving',
                 'component' => 'IndexPage',
             ]
         );
