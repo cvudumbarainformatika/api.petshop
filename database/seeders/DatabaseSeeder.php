@@ -277,7 +277,7 @@ class DatabaseSeeder extends Seeder
         );
         $transaksi->children()->updateOrCreate(
             [
-                'title' => 'Retur PBF',
+                'title' => 'Retur Pembelian',
             ],
             [
                 'icon' => 'layers',
@@ -299,6 +299,19 @@ class DatabaseSeeder extends Seeder
                 'component' => 'IndexPage',
             ]
         );
+        $transaksi->children()->updateOrCreate(
+            [
+                'title' => 'Pembayaran Hutang',
+            ],
+            [
+                'icon' => 'layers',
+                'url' => 'admin/transaksi/pembyhutang',
+                'name' => 'transaksi.pembyhutang',
+                'view' => '/views/transaksi/pembayaranhutang',
+                'component' => 'IndexPage',
+            ]
+        );
+
         //  LAPORAN
         $laporan = Menu::firstOrCreate(
             ['title' => 'Laporan'],
