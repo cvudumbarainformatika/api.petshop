@@ -186,6 +186,7 @@ class AuthController extends Controller
             'hp' => $request->hp,
             'alamat' => $request->alamat,
             'kode_jabatan' => $request->kode_jabatan,
+            'password' => bcrypt($request->password)
         ]);
         return new JsonResponse([
             'user' => $user
