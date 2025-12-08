@@ -48,7 +48,8 @@ services:
     ports:
       - "8182:80"
     volumes:
-      - ./:/var/www:ro   # mount root project Laravel
+      # - ./:/var/www:ro   # mount root project Laravel
+      - ./public:/var/www/public:ro   # mount root project Laravel
     networks:
       - default
       - sa_shared
