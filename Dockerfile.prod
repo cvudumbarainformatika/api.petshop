@@ -59,7 +59,11 @@ COPY --chown=$user:$user . .
 # Permissions
 RUN chmod -R 755 /var/log/supervisor /var/run/supervisor && \
     chown -R $user:$user /var/www /var/log/supervisor /var/run/supervisor
-
+    
+# Pastikan storage & bootstrap/cache writable
+RUN mkdir -p /var/www/storage /var/www/bootstrap/cache && \
+    chown -R $user:$user /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Composer install production
 USER $user
