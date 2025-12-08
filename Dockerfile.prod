@@ -2,6 +2,7 @@ FROM arm64v8/php:8.3-fpm
 
 ARG user=harry
 ARG uid=1000
+RUN useradd -u $uid -m $user
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -59,7 +60,7 @@ COPY --chown=$user:$user . .
 # Permissions
 RUN chmod -R 755 /var/log/supervisor /var/run/supervisor && \
     chown -R $user:$user /var/www /var/log/supervisor /var/run/supervisor
-    
+
 # Pastikan storage & bootstrap/cache writable
 RUN mkdir -p /var/www/storage /var/www/bootstrap/cache && \
     chown -R $user:$user /var/www/storage /var/www/bootstrap/cache && \
