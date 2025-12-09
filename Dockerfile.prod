@@ -5,77 +5,49 @@ ARG uid=1000
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    unzip \
-    zip \
-    supervisor \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    openssl \
-    procps \
-    libbrotli-dev \
-    redis-tools \
-    netcat-openbsd \
+    git curl unzip zip supervisor \
+    libpng-dev libonig-dev libxml2-dev libzip-dev openssl procps \
+    libbrotli-dev redis-tools netcat-openbsd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-install \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip \
-    sockets
-
-# Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+# PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip sockets \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Add application user
-RUN useradd -G www-data,root -u $uid -d /home/$user $user \
-    && mkdir -p /home/$user/.composer \
-    && chown -R $user:$user /home/$user
+# Create application user
+RUN useradd -u $uid -m -G www-data,root $user
 
-# Set workdir
 WORKDIR /var/www
 
-# Supervisor dirs
-RUN mkdir -p /var/log/supervisor /var/run/supervisor /etc/supervisor/conf.d
+# Supervisor directory
+RUN mkdir -p /var/log/supervisor /var/run/supervisor
 
+# Copy Supervisor main config (overwrite default)
+COPY ./docker-compose/php/prod/supervisord/supervisord.conf /etc/supervisor/supervisord.conf
 
-# Copy supervisord.conf ke dalam image
-COPY ./docker-compose/php/prod/supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Baru salin semua app source code
+# Copy app files (owned by sa)
 COPY --chown=$user:$user . .
 
-# Permissions
-RUN chmod -R 755 /var/log/supervisor /var/run/supervisor && \
-    chown -R $user:$user /var/www /var/log/supervisor /var/run/supervisor
+# Storage permissions
+RUN mkdir -p storage bootstrap/cache && \
+    chown -R $user:$user storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache
 
-# Pastikan storage & bootstrap/cache writable
-RUN mkdir -p /var/www/storage /var/www/bootstrap/cache && \
-    chown -R $user:$user /var/www/storage /var/www/bootstrap/cache && \
-    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Install dependencies (still root)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Composer install production
-USER $user
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
-
-# Copy dan setup entrypoint script
-COPY --chown=$user:$user docker-entrypoint.sh /usr/local/bin/
+# Copy entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Set entrypoint (wrap CMD)
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
+# PHP-FPM exposed port
 EXPOSE 9000
 
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Run supervisor as root
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
