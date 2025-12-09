@@ -1,8 +1,7 @@
 FROM arm64v8/php:8.3-fpm
 
-ARG user=harry
+ARG user=sa
 ARG uid=1000
-RUN useradd -u $uid -m $user
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \

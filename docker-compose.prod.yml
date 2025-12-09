@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: sa_app
-    user: root    # <-- fix di sini
+    user: sa    # <-- fix di sini
     ports:
       - "9001:9000"
     restart: unless-stopped
@@ -48,8 +48,8 @@ services:
     ports:
       - "8182:80"
     volumes:
-      # - ./:/var/www:ro   # mount root project Laravel
-      - ./public:/var/www/public:ro   # mount root project Laravel
+      - ./:/var/www:ro   # mount root project Laravel
+      # - ./public:/var/www/public:ro   # mount root project Laravel
     networks:
       - default
       - sa_shared
