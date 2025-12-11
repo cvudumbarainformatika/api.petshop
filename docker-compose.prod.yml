@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: sa_app
-    user: sa    # <-- fix di sini
+    # user: root
     ports:
       - "9001:9000"
     restart: unless-stopped
