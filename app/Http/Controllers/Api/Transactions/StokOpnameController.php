@@ -166,25 +166,28 @@ class StokOpnameController extends Controller
                 },
             ])
             ->get();
-        // new opname
-        $profile = ProfileToko::first();
+
         foreach ($barang as $key) {
-            // dibedakan antara gudang dan depo
-            // gudang
+
             $stok = $key->stok;
-            $stokAwalGud = $key->stokAwal ? $key->stokAwal->sum('jumlah_k') : 0;
+            $stokAwalGud = !empty($key->stok_awal) ? $key->stok_awal->sum('jumlah_k') : 0;
+
             $penerimaan = $key->penerimaanRinci ? $key->penerimaanRinci->sum('jumlah_k') : 0;
             $returPembelian = $key->returPembelianRinci ? $key->returPembelianRinci->sum('jumlah_k') : 0;
             $penyesuaian = $key->penyesuaian && $stok ? $key->penyesuaian->where('id_stok', $stok->id)->sum('jumlah_k') : 0;
             $penjualan = $key->penjualanRinci ? $key->penjualanRinci->sum('jumlah_k') : 0;
             $returPenjualan = $key->returPenjualanRinci ? $key->returPenjualanRinci->sum('jumlah_k') : 0;
 
-            $sisa = (int)$stokAwalGud + (int)$penerimaan  + (int)$penyesuaian + (int)$returPenjualan - (int)$penjualan - (int)$returPembelian;
+            if (empty($key->stok_awal)) {
+                $sisa = (int) $stok->jumlah_k;
+            } else {
+                $sisa = (int)$stokAwalGud + (int)$penerimaan  + (int)$penyesuaian + (int)$returPenjualan - (int)$penjualan - (int)$returPembelian;
+            }
 
             if ($stok && $sisa > 0) {
                 $data[] = [
                     'kode_depo' => 'APS0001',
-                    'kode_barang' => $stok->kode_barang,
+                    'kode_barang' => $key->kode,
                     // 'isi' => $stok->isi,
                     'satuan_k' => $stok->satuan_k,
                     'jumlah_k' => $sisa,
@@ -197,8 +200,9 @@ class StokOpnameController extends Controller
         if (count($data) <= 0) {
             return new JsonResponse([
                 'message' => 'Tidak ada Data untuk di simpan. apakah ada transaksi di bulan tersebut?',
-
-                'barang' => $barang
+                'barang' => $barang,
+                'stok' => $stok,
+                'sisa' => $sisa,
             ], 410);
         }
         $hasil = collect($data)->chunk(1000)->each(function ($chunk) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Transactions\StokOpnameController;
 use App\Http\Controllers\DataMigration\CekDataController;
 use App\Models\Master\Barang;
 use App\Models\OldApp\Master\Product;
@@ -25,7 +26,7 @@ Route::get('/autogen', function () {
     // $user = User::limit(10)->get();
     // return $user;
 
-    echo 'SELAMAT DATANG' ;
+    echo 'SELAMAT DATANG';
 });
 
 // Route::get('/cek', [CekDataController::class, 'index']);
@@ -45,3 +46,5 @@ Route::get('/test-curl', function () {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
+
+Route::get('/opname', [StokOpnameController::class, 'simpan']);
