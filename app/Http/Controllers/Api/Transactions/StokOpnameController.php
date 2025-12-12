@@ -184,7 +184,7 @@ class StokOpnameController extends Controller
             $sisa = (int)$stokAwalGud + (int)$penerimaan  + (int)$penyesuaian + (int)$returPenjualan - (int)$penjualan - (int)$returPembelian;
             // }
 
-            if ($stok && $sisa > 0) {
+            if ($stok) {
                 $data[] = [
                     'kode_depo' => 'APS0001',
                     'kode_barang' => $key->kode,
