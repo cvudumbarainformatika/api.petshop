@@ -178,11 +178,11 @@ class StokOpnameController extends Controller
             $penjualan = $key->penjualanRinci ? $key->penjualanRinci->sum('jumlah_k') : 0;
             $returPenjualan = $key->returPenjualanRinci ? $key->returPenjualanRinci->sum('jumlah_k') : 0;
 
-            if (empty($key->stok_awal)) {
-                $sisa = (int) $stok->jumlah_k;
-            } else {
-                $sisa = (int)$stokAwalGud + (int)$penerimaan  + (int)$penyesuaian + (int)$returPenjualan - (int)$penjualan - (int)$returPembelian;
-            }
+            // if (empty($key->stok_awal)) {
+            //     $sisa = (int) $stok->jumlah_k;
+            // } else {
+            $sisa = (int)$stokAwalGud + (int)$penerimaan  + (int)$penyesuaian + (int)$returPenjualan - (int)$penjualan - (int)$returPembelian;
+            // }
 
             if ($stok && $sisa > 0) {
                 $data[] = [
